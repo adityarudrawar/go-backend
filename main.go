@@ -1,12 +1,12 @@
 package main
 
-import (
-	"github.com/adityarudrawar/app"
-)
+import "github.com/adityarudrawar/go-backend/app"
 
 func main(){
 
 	// TODO: Add support for env 
-	log.Println("Starting server on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	err := app.SetupAndRunApp()
+	if err != nil {
+		panic(err)
+	}
 }
