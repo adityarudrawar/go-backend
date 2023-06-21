@@ -1,0 +1,42 @@
+# docker-compose -f docker-compose.yml up -d
+version: '3.9'
+services:
+  app:
+    container_name: golang_container
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DBNAME}
+      - DATABASE_HOST=${POSTGRES_HOST}
+      - DATABASE_PORT=${POSTGRES_PORT}
+    tty: true
+    build: .
+    ports:
+      - 8085:8085
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - postgresdb
+    networks:
+      - learning
+  
+  postgresdb:
+    image: nimblepostgresdb:latest
+    container_name: postgres
+    environment:
+      - DATABASE_HOST=${POSTGRES_HOST}
+      - DATABASE_PORT=${POSTGRES_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DBNAME}
+    ports:
+      - '5432:5432'
+    volumes:
+      - /var/lib/postgresql/data # Imp for getting the already loaded data in the custom postgres image
+    networks:
+      - learning
+
+networks:
+  learning:
+    driver: bridge
