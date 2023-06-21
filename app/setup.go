@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log"
 	"os"
 
 	"github.com/adityarudrawar/go-backend/router"
@@ -38,8 +39,10 @@ func SetupAndRunApp() error {
 	router.SetupRoutes(app)
 
 	// gets the port and start
-	port := os.Getenv("PORT")
-	app.Listen(":" + port)
+	host := os.Getenv("APP_HOST")
+	port := os.Getenv("APP_PORT")
+	log.Println(host, port)
+	app.Listen(host + ":" + port)
 
 	return nil
 }
