@@ -16,3 +16,8 @@ Run Command - docker container run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=pos
 docker-compose -f docker-compose.yml up -d
 ```
 4. The application should be running on port 8085
+
+
+#### Useful links
+1. https://cadu.dev/creating-a-docker-image-with-database-preloaded/
+2. https://stackoverflow.com/questions/53735948/cannot-get-connection-between-containers
