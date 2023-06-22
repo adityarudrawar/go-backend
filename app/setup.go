@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"os"
 
 	"github.com/adityarudrawar/go-backend/router"
@@ -11,20 +10,10 @@ import (
 	"github.com/joho/godotenv"
 )
 func SetupAndRunApp() error {
-	// TODO: load env
 	err := godotenv.Load()
 	if err != nil {
 		return err
 	}
-
-	// // start database
-	// err = database.StartMongoDB()
-	// if err != nil {
-	// 	return err
-	// }
-
-	// // defer closing database
-	// defer database.CloseMongoDB()
 
 	// create app
 	app := fiber.New()
@@ -41,7 +30,7 @@ func SetupAndRunApp() error {
 	// gets the port and start
 	host := os.Getenv("APP_HOST")
 	port := os.Getenv("APP_PORT")
-	log.Println(host, port)
+	
 	app.Listen(host + ":" + port)
 
 	return nil
