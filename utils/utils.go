@@ -6,8 +6,8 @@ import (
 	"io"
 )
 
-func GetNumber() string {
-	number := encodeToString(6)
+func GetNumber(size int) string {
+	number := encodeToString(size)
 	return number
 }
 
