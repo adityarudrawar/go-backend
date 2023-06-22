@@ -35,13 +35,11 @@ type LoginOutput struct {
 }
 
 func HandleSignup(c *fiber.Ctx) error {
-	uid := utils.GetNumber()
+	uid := utils.GetNumber(6)
 
 	// From request body get the json
 	signupInput := new(SignupInput)
 	if err := c.BodyParser(signupInput); err != nil {
-		// TODO: correct the response here  
-        log.Println("error = ",err)
 		message := err.Error()	
 		errorMessage := ErrorMessageOutput{
 			Message: message,
