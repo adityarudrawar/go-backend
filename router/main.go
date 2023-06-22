@@ -15,8 +15,8 @@ func SetupRoutes(app *fiber.App) {
 	auth.Post("/login", handlers.HandleLogin)
 
 	message := app.Group("/message")
-	message.Get("/messages", handlers.HandleHealthCheck)
-	message.Post("/send_message", handlers.HandleHealthCheck)
-	message.Post("/upvote/:id", handlers.HandleHealthCheck)
-	message.Post("/downvote/:id", handlers.HandleHealthCheck)
+	message.Post("/", handlers.HandlePostMessage)
+	message.Get("/", handlers.HandleGetMessage)
+	message.Post("/upvote/:id", handlers.HandleUpvote)
+	message.Post("/downvote/:id", handlers.HandleDownvote)
 }
