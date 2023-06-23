@@ -8,7 +8,7 @@ ALTER DATABASE nimble OWNER TO postgres;
 
 CREATE TABLE Users (id text PRIMARY KEY, username text UNIQUE, hashed_password text);
 
-CREATE TABLE Messages(id text, created_at DATE, sender text, upvotes integer, downvotes integer, content text, PRIMARY KEY(id));
+CREATE TABLE Messages(id text, created_at DATE, sender_id text, upvotes integer, downvotes integer, content text, sender_name text, PRIMARY KEY(id));
 
 ALTER TABLE Users OWNER TO postgres;
 ALTER TABLE Messages OWNER TO postgres;

@@ -10,17 +10,19 @@ import (
 )
 
 type MessageInput struct {
-	Sender  string `json:"sender" binding:"required"`
+	SenderName  string `json:"senderName" binding:"required"`
 	Content string `json:"content" binding:"required"`
+	SenderId string `json:"senderId" binding:"required"`
 }
 
 type Message struct {
 	Id string `json:"id"`
-	Sender string `json:"sender"`
+	SenderId string `json:"senderId"`
 	CreatedAt string `json:"createdAt"`
 	Content string `json:"content"`
 	Upvotes int `json:"upvotes"`
 	Downvotes int `json:"downvotes"`
+	SenderName string `json:"senderName"`
 }
 
 func HandlePostMessage(c *fiber.Ctx) error {
@@ -32,16 +34,17 @@ func HandlePostMessage(c *fiber.Ctx) error {
 
 	uid := utils.GetNumber(15)
 	created_at := time.Now()
-	sender := messageInput.Sender
+	senderName := messageInput.SenderName
 	content := messageInput.Content
+	senderId := messageInput.SenderId
 
 	db := database.CreateConnection()
 
 	sqlStatement := `
-		INSERT INTO Messages (id, created_at, sender, upvotes, downvotes, content)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO Messages (id, created_at, sender_id, upvotes, downvotes, content, sender_name)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err := db.Exec(sqlStatement, uid, created_at, sender, 0, 0, content)
+	_, err := db.Exec(sqlStatement, uid, created_at, senderId, 0, 0, content, senderName)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": "error",
@@ -53,11 +56,12 @@ func HandlePostMessage(c *fiber.Ctx) error {
 
 	message := Message{
 		Id : uid,
-		Sender : sender,
+		SenderId : senderId,
 		CreatedAt : created_at.String(),
 		Content : content,
 		Upvotes : 0,
 		Downvotes : 0,
+		SenderName: senderName,
 	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -86,7 +90,7 @@ func HandleGetMessage(c *fiber.Ctx) error {
 	for rows.Next() {
 		var message Message
 		
-		if err := rows.Scan(&message.Id, &message.CreatedAt, &message.Sender,&message.Upvotes, &message.Downvotes, &message.Content); err != nil {
+		if err := rows.Scan(&message.Id, &message.CreatedAt, &message.SenderId,&message.Upvotes, &message.Downvotes, &message.Content, &message.SenderName); err != nil {
 			log.Panic(err)
 			message := err.Error()
 			errorMesage := ErrorMessageOutput {
@@ -142,14 +146,15 @@ func HandleUpvote(c *fiber.Ctx) error {
 
 	row := db.QueryRow(sqlStatement, id)
 
-	// var id string 
+	var senderId string 
 	var createdAt string
 	var sender string
 	var upvotes int
 	var downvotes int
 	var content string
+	var senderName string
 
-	err = row.Scan(&id, &createdAt, &sender, &upvotes, &downvotes, &content)
+	err = row.Scan(&senderId, &createdAt, &sender, &upvotes, &downvotes, &content, &senderName)
 	if err != nil {
 		log.Panic(err)
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -161,10 +166,11 @@ func HandleUpvote(c *fiber.Ctx) error {
 	message := Message{
 		Id : id,
 		CreatedAt: createdAt,
-		Sender: sender,
+		SenderId: senderId,
 		Upvotes: upvotes,
 		Downvotes: downvotes,
 		Content: content,
+		SenderName: senderName,
 	}
 
     return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -209,14 +215,15 @@ func HandleDownvote(c *fiber.Ctx) error {
 
 	row := db.QueryRow(sqlStatement, id)
 
-	// var id string 
+	var senderId string 
 	var createdAt string
 	var sender string
 	var upvotes int
 	var downvotes int
 	var content string
+	var senderName string
 
-	err = row.Scan(&id, &createdAt, &sender, &upvotes, &downvotes, &content)
+	err = row.Scan(&senderId, &createdAt, &sender, &upvotes, &downvotes, &content, &senderName)
 	if err != nil {
 		log.Panic()
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -228,7 +235,8 @@ func HandleDownvote(c *fiber.Ctx) error {
 	message := Message{
 		Id : id,
 		CreatedAt: createdAt,
-		Sender: sender,
+		SenderId: senderId,
+		SenderName: senderName,
 		Upvotes: upvotes,
 		Downvotes: downvotes,
 		Content: content,
