@@ -5,8 +5,10 @@ import (
 
 	"github.com/adityarudrawar/go-backend/router"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+
 	"github.com/joho/godotenv"
 )
 func SetupAndRunApp() error {
@@ -17,6 +19,8 @@ func SetupAndRunApp() error {
 
 	// create app
 	app := fiber.New()
+
+	app.Use(cors.New())
 
 	// attach middleware
 	app.Use(recover.New())
