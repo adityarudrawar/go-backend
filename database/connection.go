@@ -1,49 +1,35 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/adityarudrawar/go-backend/models"
 	"github.com/joho/godotenv"
-
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
 
-func getConnectionString() string {
-	host, port, user, password, dbname := getdbCred()
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	return psqlInfo
-}
-
-func CreateConnection() *sql.DB {
+func Connect() {
 	
-	connectionString := getConnectionString()
+	dsn := get_dsn()
 	
-	db, err := sql.Open("postgres", connectionString)
-	if err != nil {
-		panic(err)
-	}
+	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
-	err = db.Ping()
 	if err != nil {
-		panic(err)
+		panic("connection to database failed")
 	}
-	// defer db.Close()
+	
+	// Auto create tables with models by using the AutoMigrate method 
+	connection.AutoMigrate(&models.User{})
 
-	return db
+	DB = connection
 }
 
-func CloseDB(db *sql.DB) error {
-	return db.Close()
-}
-
-func getdbCred() (string, string, string, string, string) {
+func get_dsn() string {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -56,5 +42,7 @@ func getdbCred() (string, string, string, string, string) {
 	POSTGRES_PASSWORD := os.Getenv("POSTGRES_PASSWORD")
 	POSTGRES_DBNAME := os.Getenv("POSTGRES_DBNAME")
 
-	return POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DBNAME
+	return fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DBNAME)
 }

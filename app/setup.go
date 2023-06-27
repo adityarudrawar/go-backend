@@ -3,6 +3,7 @@ package app
 import (
 	"os"
 
+	"github.com/adityarudrawar/go-backend/database"
 	"github.com/adityarudrawar/go-backend/router"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -16,6 +17,9 @@ func SetupAndRunApp() error {
 	if err != nil {
 		return err
 	}
+
+	// Check Connection to the database
+	database.Connect()
 
 	// create app
 	app := fiber.New()
