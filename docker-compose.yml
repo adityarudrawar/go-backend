@@ -1,4 +1,5 @@
 # docker-compose -f docker-compose.yml up -d
+# docker-compose up --build
 version: '3.9'
 services:
   app:
@@ -22,7 +23,7 @@ services:
       - learning
   
   postgresdb:
-    image: nimblepostgresdb:latest
+    image: postgresdb:latest
     container_name: postgres
     environment:
       - DATABASE_HOST=${POSTGRES_HOST}
