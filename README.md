@@ -1,13 +1,9 @@
 1. Create the custom postgres image by running the db.Dockerfile
 ```
-Build the image Command - docker image build -f db.Dockerfile . -t nimblepostgresdb:latest
+Build the image Command - docker image build -f db.Dockerfile . -t postgresdb:latest
 ```
 
 If you want to run the image, the command is
-
-```
-docker container run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres --name nimblepostgresdb nimblepostgresdb:latest
-```
 ```
 docker run --name metalman66/postgresdb -e POSTGRES_PASSWORD=postgres -p 5432:5432 -h postgres -d postgres
 ```
@@ -18,6 +14,7 @@ docker run --name metalman66/postgresdb -e POSTGRES_PASSWORD=postgres -p 5432:54
 ```
 docker-compose -f docker-compose.yml up -d
 ```
+
 4. The application should be running on port 8085
 
 #### Packages that I am using

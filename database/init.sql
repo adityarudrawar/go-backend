@@ -1,10 +1,10 @@
 -- https://cadu.dev/creating-a-docker-image-with-database-preloaded/
 
-CREATE DATABASE nimble;
+CREATE DATABASE goproject;
 
-ALTER DATABASE nimble OWNER TO postgres;
+ALTER DATABASE goproject OWNER TO postgres;
 
-\connect nimble
+\connect goproject
 
 -- Write the table shcema, and relations that you want so that you can preload the postgres images with the table. 
 -- An example is given below.
