@@ -14,8 +14,10 @@ I am constantly learning and will be improving the code base even more.
 
 ## Building and running the application
 
-### Create Custom postgres docker image
-Modiy the database/init.sql according to your needs to create your databases, tables, relations, and load data.
+You can directly run the kubernetes files or the docker containers by the commands below, you can also build the custom image stated below.
+
+### A. Create Custom postgres docker image
+Modify the database/init.sql according to your needs to create your databases, tables, relations, and load data.
 During the building phase the Docker image will be builded by running the script inside the container to create the custom postgres image.
 
 Command to build the postgres docker image
@@ -28,7 +30,7 @@ Push the postgres docker image to docker hub
 docker push metalman66/postgresdb
 ```
 
-### Docker Compose
+### B. Docker Compose
 
 You can run the application throught docker by using the docker-compose file.
 Command to run docker-compose.
@@ -37,10 +39,9 @@ Command to run docker-compose.
 docker-compose up --build
 ```
 
-### Kubernetes
+### C. Kubernetes
 You can run the application through deployment on a kubernetes cluster. 
 Yaml files are present for the gobackend and the postgres db.
-
 
 Run the following command to start the Kubernetes deployment and services.
 ```
