@@ -3,7 +3,8 @@
 version: '3.9'
 services:
   app:
-    container_name: golang_container
+    image: metalman66/gobackend:latest
+    container_name: gobackend
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -23,8 +24,8 @@ services:
       - learning
   
   postgresdb:
-    image: postgresdb:latest
-    container_name: postgres
+    image: metalman66/postgresdb:latest
+    container_name: postgresdb
     environment:
       - DATABASE_HOST=${POSTGRES_HOST}
       - DATABASE_PORT=${POSTGRES_PORT}
@@ -37,7 +38,7 @@ services:
       - /var/lib/postgresql/data # Imp for getting the already loaded data in the custom postgres image
     networks:
       - learning
-
+# TODO: Add volumes to the postgres container
 networks:
   learning:
     driver: bridge
