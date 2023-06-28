@@ -3,6 +3,8 @@ package handlers
 import (
 	"time"
 
+	"net/http"
+
 	"github.com/adityarudrawar/go-backend/database"
 	"github.com/adityarudrawar/go-backend/models"
 	"github.com/gofiber/fiber/v2"
@@ -31,23 +33,20 @@ func HandleRegister(c *fiber.Ctx) error {
 	u := database.DB.FirstOrCreate(&user)
 
 	if u.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(
-			fiber.Map{
-				"error": "Internal server error",
-			})
+		statusCode := fiber.StatusInternalServerError
+		response := models.BuildResponse(http.StatusText(statusCode), "Failed to create new user", nil, u.Error.Error())
+		return c.Status(statusCode).JSON(response)
 	}
 
 	if u.RowsAffected == 1 {
-		return c.Status(fiber.StatusCreated).JSON(
-			fiber.Map{
-				"message": "User created successfully",
-			})
+		statusCode := fiber.StatusCreated
+		response := models.BuildResponse(http.StatusText(statusCode), "User Created succesfully", user, "")
+		return c.Status(statusCode).JSON(response)
 	}
 	
-	return c.Status(fiber.StatusBadRequest).JSON(
-		fiber.Map{
-			"error": "Username already exists",
-		})
+	statusCode := fiber.StatusBadRequest
+	response := models.BuildResponse(http.StatusText(statusCode), "Username already exists", nil, "Username already exists")
+	return c.Status(statusCode).JSON(response)
 }
 
 
@@ -63,18 +62,16 @@ func HandleLogin(c *fiber.Ctx) error {
 	dbc := database.DB.Where("username = ?", data["username"]).First(&user)
 
 	if dbc.RowsAffected == 0 {
-		c.Status(fiber.StatusNotFound)
-		return c.JSON(fiber.Map{
-			"message": "User not found",
-		})
+		statusCode := fiber.StatusNotFound
+		response := models.BuildResponse(http.StatusText(statusCode), "User not found", nil, "User not found")
+		return c.Status(statusCode).JSON(response)
 	}
 
 	// Compare the hash of the password
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"])); err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return c.JSON(fiber.Map{
-			"message": "Incorrect password",
-		})
+		statusCode := fiber.StatusBadRequest
+		response := models.BuildResponse(http.StatusText(statusCode), "Incorrect password", nil, "Incorrect password")
+		return c.Status(statusCode).JSON(response)
 	}
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
@@ -85,10 +82,9 @@ func HandleLogin(c *fiber.Ctx) error {
 	token, err := claims.SignedString([]byte(SecretKey))
 
 	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"message": "Could not login",
-		})
+		statusCode := fiber.StatusInternalServerError
+		response := models.BuildResponse(http.StatusText(statusCode), "Could not login", nil, "Could not login")
+		return c.Status(statusCode).JSON(response)
 	}
 
 	cookie := fiber.Cookie{
@@ -100,9 +96,10 @@ func HandleLogin(c *fiber.Ctx) error {
 
 	c.Cookie(&cookie)
 
-	return c.JSON(fiber.Map{
-		"message": "success",
-	})
+	
+	statusCode := fiber.StatusOK
+	response := models.BuildResponse(http.StatusText(statusCode), "Logged in", user, "")
+	return c.Status(statusCode).JSON(response)
 }
 
 func HandleGetUser(c *fiber.Ctx) error {
@@ -113,10 +110,9 @@ func HandleGetUser(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"message": "unauthenticated",
-		})
+		statusCode := fiber.StatusUnauthorized
+		response := models.BuildResponse(http.StatusText(statusCode), "Unauthenticated", nil, "")
+		return c.Status(statusCode).JSON(response)
 	}
 
 	claims := token.Claims.(*jwt.StandardClaims)
@@ -125,7 +121,9 @@ func HandleGetUser(c *fiber.Ctx) error {
 
 	database.DB.Where("username = ?", claims.Issuer).First(&user)
 
-	return c.JSON(user)
+	statusCode := fiber.StatusOK
+	response := models.BuildResponse(http.StatusText(statusCode), "", user, "")
+	return c.Status(statusCode).JSON(response)
 }
 
 func HandleLogout(c *fiber.Ctx) error {
