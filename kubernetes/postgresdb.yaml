@@ -1,0 +1,48 @@
+# service and deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresdb-service
+spec:
+  selector:
+    app: postgresdb-deployment
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 7849 
+      targetPort: 5432
+      nodePort: 30064
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresdb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresdb-deployment
+  template:
+    metadata:
+      labels:
+        app: postgresdb-deployment
+    spec:
+      containers:
+      - name: postgresdb-deployment
+        image: metalman66/postgresdb:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 5432
+        # env: 
+        # - name: API_HOST
+        #   value: "0.0.0.0"
+        # - name: POSTGRES_HOST
+        #   value: "0.0.0.0"
+        # - name: POSTGRES_PORT
+        #   value: "5432"
+        # - name: POSTGRES_USER
+        #   value: postgres
+        # - name: POSTGRES_PASSWORD
+        #   value: postgres
+        # - name: POSTGRES_DBNAME
+        #   value: goproject

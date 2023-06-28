@@ -1,0 +1,46 @@
+# service and deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: gobackend-service
+spec:
+  selector:
+    app: gobackend-deployment
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8074
+      targetPort: 8085
+      nodePort: 30033
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gobackend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gobackend-deployment
+  template:
+    metadata:
+      labels:
+        app: gobackend-deployment
+    spec:
+      containers:
+      - name: gobackend-deployment
+        image: metalman66/gobackend:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8085
+        env:
+        - name: POSTGRES_HOST
+          value: postgresdb-service
+        - name: POSTGRES_PORT
+          value: "7849"
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DBNAME
+          value: goproject
