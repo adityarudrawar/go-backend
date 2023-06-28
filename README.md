@@ -49,6 +49,9 @@ kubectl apply -f postgresdb.yaml
 kubectl apply -f gobackend.yaml
 ```
 
+### Future Tasks
+1. Add support for gRPC
+2. Add support for GraphQL database 
 
 #### Useful links
 1. https://cadu.dev/creating-a-docker-image-with-database-preloaded/
