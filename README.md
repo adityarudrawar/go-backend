@@ -47,3 +47,8 @@ Run the following command to start the Kubernetes deployment and services.
 kubectl apply -f postgresdb.yaml
 kubectl apply -f gobackend.yaml
 ```
+
+
+#### Useful links
+1. https://cadu.dev/creating-a-docker-image-with-database-preloaded/
+2. https://stackoverflow.com/questions/53735948/cannot-get-connection-between-containers
