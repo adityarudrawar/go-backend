@@ -50,8 +50,10 @@ kubectl apply -f gobackend.yaml
 ```
 
 ### Future Tasks
-1. Add support for gRPC
-2. Add support for GraphQL database 
+1. Add tests 
+2. Add support for gRPC
+3. Add support for GraphQL database 
+4. Add support for Auto build and push to dockerhub through Github actions
 
 #### Useful links
 1. https://cadu.dev/creating-a-docker-image-with-database-preloaded/
