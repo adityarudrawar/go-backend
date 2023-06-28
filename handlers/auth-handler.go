@@ -13,6 +13,7 @@ import (
 )
 
 // TODO: Write better response objects for each error
+// TODO: Read the secret from env
 
 var SecretKey = "dhkjgbfkljkljbdlkjbfjkb"
 
@@ -29,7 +30,8 @@ func HandleRegister(c *fiber.Ctx) error {
 		Username: data["username"],
 		Password: password,
 	}
-	
+
+	// TODO: There is bug in this code
 	u := database.DB.FirstOrCreate(&user)
 
 	if u.Error != nil {
@@ -122,7 +124,7 @@ func HandleGetUser(c *fiber.Ctx) error {
 	database.DB.Where("username = ?", claims.Issuer).First(&user)
 
 	statusCode := fiber.StatusOK
-	response := models.BuildResponse(http.StatusText(statusCode), "", user, "")
+	response := models.BuildResponse(http.StatusText(statusCode), "User Provided", user, "")
 	return c.Status(statusCode).JSON(response)
 }
 
@@ -136,7 +138,7 @@ func HandleLogout(c *fiber.Ctx) error {
 
 	c.Cookie(&cookie)
 
-	return c.JSON(fiber.Map{
-		"message": "success",
-	})
+	statusCode := fiber.StatusOK
+	response := models.BuildResponse(http.StatusText(statusCode), "Success", nil, "")
+	return c.Status(statusCode).JSON(response)
 }
