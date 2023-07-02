@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/adityarudrawar/go-backend/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -24,9 +23,9 @@ func Connect() {
 	}
 	
 	// Auto create tables with models by using the AutoMigrate method 
-	connection.AutoMigrate(&models.User{})
+	// connection.AutoMigrate(&models.User{})
 
-	connection.AutoMigrate(&models.Session{})
+	// connection.AutoMigrate(&models.Session{})
 
 	DB = connection
 }
