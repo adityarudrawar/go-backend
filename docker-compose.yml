@@ -35,10 +35,13 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - /var/lib/postgresql/data # Imp for getting the already loaded data in the custom postgres image
+      - postgres-data:/var/lib/postgresql/data 
     networks:
       - learning
-# TODO: Add volumes to the postgres container
+
+volumes:
+  postgres-data:
+
 networks:
   learning:
     driver: bridge
