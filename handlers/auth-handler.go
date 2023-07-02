@@ -15,6 +15,7 @@ import (
 
 // TODO: Read the secret from env
 // TODO: Abstract getting token and username to a function
+// TODO: Better responses
 
 var SecretKey = "dhkjgbfkljkljbdlkjbfjkb"
 
