@@ -30,6 +30,11 @@ Push the postgres docker image to docker hub
 docker push metalman66/postgresdb
 ```
 
+If you want to run the docker image locally, run the following command
+```
+docker container run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres --name postgresdb metalman66/postgresdb:latest
+```
+
 ### B. Docker Compose
 
 You can run the application throught docker by using the docker-compose file.
