@@ -6,16 +6,16 @@ ALTER DATABASE goproject OWNER TO postgres;
 
 \connect goproject
 
--- CREATE TABLE Users (username text PRIMARY KEY, hashed_password text);
--- ALTER TABLE Users OWNER TO postgres;
+CREATE TABLE users (username text PRIMARY KEY, "password" text);
+ALTER TABLE users OWNER TO postgres;
 
 
--- CREATE TABLE UserSessions (username text PRIMARY KEY REFERENCES Users(username), token text);
--- ALTER TABLE UserSessions OWNER TO postgres;
+CREATE TABLE usersessions (username text PRIMARY KEY REFERENCES Users(username), token text);
+ALTER TABLE usersessions OWNER TO postgres;
 
 
--- CREATE TABLE Messages(uuid text PRIMARY KEY, created_at DATE, sender_username text REFERENCES Users(username), upvotes integer, downvotes integer, content VARCHAR(1024));
--- ALTER TABLE Messages OWNER TO postgres;
+CREATE TABLE messages(uuid text PRIMARY KEY, created_at DATE, sender_username text REFERENCES Users(username), upvotes integer, downvotes integer, content VARCHAR(1024));
+ALTER TABLE messages OWNER TO postgres;
 
 -- Write the table shcema, and relations that you want so that you can preload the postgres images with the table. 
 -- An example is given below.
