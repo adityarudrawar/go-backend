@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"strings"
 	"time"
 
 	"net/http"
@@ -17,6 +17,9 @@ import (
 // TODO: Abstract getting token and username to a function
 // TODO: Better responses
 
+// TODO: Remove Cookie logic
+// TODO: Create message handlers
+
 var SecretKey = "dhkjgbfkljkljbdlkjbfjkb"
 
 func HandleRegister(c *fiber.Ctx) error {
@@ -27,6 +30,7 @@ func HandleRegister(c *fiber.Ctx) error {
 		return err
 	} 
 
+	// TODO: Change encryption algorithm
 	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
 	user := models.User{
 		Username: data["username"],
@@ -79,8 +83,9 @@ func HandleLogin(c *fiber.Ctx) error {
 		return c.Status(statusCode).JSON(response)
 	}
 
-	var session models.Session
+	var session models.UserSessions
 
+	// TODO: If a users entry exists in session table but the token has expired, and the user puts a request for login the session should update,
 	qr := database.DB.Where("username = ?", user.Username).First(&session)
 	if qr.Error == nil {
 		statusCode := fiber.StatusBadRequest
@@ -90,40 +95,32 @@ func HandleLogin(c *fiber.Ctx) error {
 	
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    user.Username,
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // 1 day
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // 1 Hour
 	})
 	
 	token, err := claims.SignedString([]byte(SecretKey))
 
 	if err != nil {
 		statusCode := fiber.StatusInternalServerError
-		response := models.BuildResponse(http.StatusText(statusCode), "Could not login", nil, "Could not login")
+		response := models.BuildResponse(http.StatusText(statusCode), "Could not login", nil, "Error signing string")
 		return c.Status(statusCode).JSON(response)
 	}
 
-	cookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 24),
-		HTTPOnly: true,
-	}
-
-	c.Cookie(&cookie)
-
-	session = models.Session{
+	session = models.UserSessions{
 		Username: user.Username,
-		Jwt: cookie.Value,
-		Expires: cookie.Expires.Unix(),
+		Token: token,
 	}
 
 	result := database.DB.Create(&session)
 
 	if result.Error != nil {
 		statusCode := fiber.StatusInternalServerError
-		response := models.BuildResponse(http.StatusText(statusCode), "Server Error", user, result.Error.Error())
+		response := models.BuildResponse(http.StatusText(statusCode), "Error creating session", user, result.Error.Error())
 		return c.Status(statusCode).JSON(response)
 	}
 	
+	c.Set("Authorization", "Bearer "+token)
+
 	statusCode := fiber.StatusOK
 	response := models.BuildResponse(http.StatusText(statusCode), "Logged in", user, "")
 	return c.Status(statusCode).JSON(response)
@@ -139,10 +136,12 @@ func HandleLogout(c *fiber.Ctx) error {
 	if !authorized {
 		return c.Status(fiber.StatusOK).SendString("NOT Authorized")
 	}
+
+	requestToken := c.Get("Authorization")
 	
-	cookie := c.Cookies("jwt")
+	requestToken = strings.TrimPrefix(requestToken, "Bearer ")
 	
-	cookieToken, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+	cookieToken, err := jwt.ParseWithClaims(requestToken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SecretKey), nil
 	})
 	
@@ -152,21 +151,12 @@ func HandleLogout(c *fiber.Ctx) error {
 
 	claims := cookieToken.Claims.(*jwt.StandardClaims)
 
-	var session models.Session
+	var session models.UserSessions
 
 	qr := database.DB.Where("username = ? ", claims.Issuer).Delete(&session)
 	if qr.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(qr.Error.Error())
 	}
-
-	newCookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		HTTPOnly: true,
-	}
-
-	c.Cookie(&newCookie)
 
 	return c.Status(fiber.StatusOK).SendString("Logged out")
 }
@@ -187,21 +177,24 @@ func HandleIsAuthenicated(c * fiber.Ctx) error {
 }
 
 func isAuthenticated(c *fiber.Ctx) (bool, error) {
-	cookie := c.Cookies("jwt")
+
+	requestToken := c.Get("Authorization")
 	
-	cookieToken, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+	requestToken = strings.TrimPrefix(requestToken, "Bearer ")
+
+	jwtToken, err := jwt.ParseWithClaims(requestToken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SecretKey), nil
-	})
-	
+	}) 
+
 	if err != nil {
-		return false, nil;
+		return false, err;
 	}
 
-	claims := cookieToken.Claims.(*jwt.StandardClaims)
+	claims := jwtToken.Claims.(*jwt.StandardClaims)
 
-	var session models.Session
+	var userSession models.UserSessions
 
-	qr := database.DB.Where("username = ?", claims.Issuer).First(&session)
+	qr := database.DB.Where("username = ?", claims.Issuer).First(&userSession)
 
 	if qr.Error != nil {
 		return false, qr.Error
@@ -211,13 +204,11 @@ func isAuthenticated(c *fiber.Ctx) (bool, error) {
 		return false, nil
 	}
 
-	log.Println(cookieToken.Raw)
-	// Check the token against the one in database and the the expriry
-	if session.Jwt != cookieToken.Raw {
+	if userSession.Token != jwtToken.Raw {
 		return false, nil
 	}
 
-	storedTime := time.Unix(session.Expires, 0)
+	storedTime := time.Unix(claims.ExpiresAt, 0)
 	currentTime := time.Now()
 
 	// Compare the current time with the stored time

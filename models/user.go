@@ -1,13 +1,15 @@
 package models
 
 type User struct {
-	Id       uint   `json:"id" gorm:"autoIncrement;not null"`
-	Username string `json:"username" gorm:"primaryKey,unique"`
+	Username string `json:"username"`
 	Password []byte `json:"-"`
 }
 
-type Session struct {
-	Username string `json:"username" gorm:"primaryKey,unique"`
-	Jwt      string `json:"jwt"`
-	Expires  int64  `json:"expires_at"`
+type UserSessions struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
+
+func (UserSessions) TableName() string {
+	return "usersessions"
 }
