@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"os"
 	"strings"
 	"time"
 
@@ -13,14 +14,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// TODO: Read the secret from env
 // TODO: Abstract getting token and username to a function
 // TODO: Better responses
 
-// TODO: Remove Cookie logic
-// TODO: Create message handlers
 
-var SecretKey = "dhkjgbfkljkljbdlkjbfjkb"
+var SecretKey = os.Getenv("TOKEN_SECRET")
 
 func HandleRegister(c *fiber.Ctx) error {
 	
@@ -141,15 +139,12 @@ func HandleLogout(c *fiber.Ctx) error {
 	
 	requestToken = strings.TrimPrefix(requestToken, "Bearer ")
 	
-	cookieToken, err := jwt.ParseWithClaims(requestToken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
-	
+	_, claims, err := getJwtTokenAndClaims(requestToken)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		statusCode := fiber.StatusInternalServerError
+		response := models.BuildResponse(http.StatusText(statusCode), "Error Logging out", nil, err.Error())
+		return c.Status(statusCode).JSON(response)
 	}
-
-	claims := cookieToken.Claims.(*jwt.StandardClaims)
 
 	var session models.UserSessions
 
@@ -182,15 +177,10 @@ func isAuthenticated(c *fiber.Ctx) (bool, error) {
 	
 	requestToken = strings.TrimPrefix(requestToken, "Bearer ")
 
-	jwtToken, err := jwt.ParseWithClaims(requestToken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	}) 
-
+	jwtToken, claims, err := getJwtTokenAndClaims(requestToken)
 	if err != nil {
-		return false, err;
+		return false, err 
 	}
-
-	claims := jwtToken.Claims.(*jwt.StandardClaims)
 
 	var userSession models.UserSessions
 
@@ -217,4 +207,18 @@ func isAuthenticated(c *fiber.Ctx) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func getJwtTokenAndClaims(token string) (*jwt.Token, *jwt.StandardClaims, error) {
+	jwtToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	
+	if err != nil {
+		return nil, nil, err
+	}
+
+	claims := jwtToken.Claims.(*jwt.StandardClaims)
+
+	return jwtToken, claims, nil;
 }
