@@ -17,4 +17,9 @@ func SetupRoutes(app *fiber.App) {
 	v1.Post("/logout", handlers.HandleLogout)
 
 	v1.Get("/authentication", handlers.HandleIsAuthenicated)
+	
+	v1.Get("/messages", handlers.HandleGetMessages)
+	v1.Post("/message", handlers.HandlePostMessage)
+	v1.Post("/message/:messageId/upvote", handlers.HandleUpvote)
+	v1.Post("/message/:messageId/downvote", handlers.HandleDownvote)
 }

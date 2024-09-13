@@ -14,10 +14,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// TODO: Abstract getting token and username to a function
-// TODO: Better responses
-
-
 var SecretKey = os.Getenv("TOKEN_SECRET")
 
 func HandleRegister(c *fiber.Ctx) error {
@@ -28,7 +24,6 @@ func HandleRegister(c *fiber.Ctx) error {
 		return err
 	} 
 
-	// TODO: Change encryption algorithm
 	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
 	user := models.User{
 		Username: data["username"],
@@ -83,7 +78,6 @@ func HandleLogin(c *fiber.Ctx) error {
 
 	var session models.UserSessions
 
-	// TODO: If a users entry exists in session table but the token has expired, and the user puts a request for login the session should update,
 	qr := database.DB.Where("username = ?", user.Username).First(&session)
 	if qr.Error == nil {
 		statusCode := fiber.StatusBadRequest
@@ -120,13 +114,13 @@ func HandleLogin(c *fiber.Ctx) error {
 	c.Set("Authorization", "Bearer "+token)
 
 	statusCode := fiber.StatusOK
-	response := models.BuildResponse(http.StatusText(statusCode), "Logged in", user, "")
+	response := models.BuildResponse(http.StatusText(statusCode), "Logged in", session, "")
 	return c.Status(statusCode).JSON(response)
 }
 
 func HandleLogout(c *fiber.Ctx) error {
 
-	authorized, err := isAuthenticated(c)
+	authorized, err := IsAuthenticated(c)
 	if err != nil {
 		return c.Status(fiber.StatusOK).SendString(err.Error())
 	}
@@ -158,7 +152,7 @@ func HandleLogout(c *fiber.Ctx) error {
 
 func HandleIsAuthenicated(c * fiber.Ctx) error {
 
-	authorized, err := isAuthenticated(c)
+	authorized, err := IsAuthenticated(c)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
@@ -171,7 +165,7 @@ func HandleIsAuthenicated(c * fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).SendString("Authorized")
 }
 
-func isAuthenticated(c *fiber.Ctx) (bool, error) {
+func IsAuthenticated(c *fiber.Ctx) (bool, error) {
 
 	requestToken := c.Get("Authorization")
 	

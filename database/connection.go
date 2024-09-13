@@ -21,11 +21,6 @@ func Connect() {
 	if err != nil {
 		panic("connection to database failed")
 	}
-	
-	// Auto create tables with models by using the AutoMigrate method 
-	// connection.AutoMigrate(&models.User{})
-
-	// connection.AutoMigrate(&models.Session{})
 
 	DB = connection
 }
